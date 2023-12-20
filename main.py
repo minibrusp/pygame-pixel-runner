@@ -46,7 +46,7 @@ class Main:
 
   def display_score(self):
     current_time = int(pygame.time.get_ticks() / 1000) - self.start_time
-    score_surf = self.font_face_n_size.render(f' Score: {current_time}', False, (64, 64, 64))
+    score_surf = self.font_face_n_size.render(f' Score: {current_time}', False, TEXT_COLOR)
     score_rect = score_surf.get_rect(center = (TEXT_CENTER_X, SCORE_POS_Y))
     self.screen.blit(score_surf, score_rect)
     return current_time
