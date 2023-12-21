@@ -1,3 +1,4 @@
+import time
 from config.settings import *
 from sys import exit
 from random import choice
@@ -5,6 +6,8 @@ from random import choice
 # components
 from classes.player import Player
 from classes.obstacle import Obstacle
+from classes.sfx import SFX
+from classes.bgm import BGM
 
 class Main:
   def __init__(self):
@@ -44,12 +47,31 @@ class Main:
     self.obstacle_timer = pygame.USEREVENT + 1
     pygame.time.set_timer(self.obstacle_timer, 1500)
 
+    # SFX 
+    self.collision_sound_1 = SFX('collision_1')
+    self.collision_sound_2 = SFX('collision_2')
+    self.collision_sound_3 = SFX('collision_3')
+
+    # BGM 
+    self.in_game_BGM_1 = BGM('in_game_1')
+    self.in_game_BGM_2 = BGM('in_game_2')
+
   def display_score(self):
     current_time = int(pygame.time.get_ticks() / 1000) - self.start_time
     score_surf = self.font_face_n_size.render(f' Score: {current_time}', False, TEXT_COLOR)
     score_rect = score_surf.get_rect(center = (TEXT_CENTER_X, SCORE_POS_Y))
     self.screen.blit(score_surf, score_rect)
     return current_time
+  
+  def collision_sprite(self):
+    if pygame.sprite.spritecollide(self.player.sprite, self.obstacle_group, False):
+      SFX.random_play_SFX(self.collision_sound_1, self.collision_sound_2, self.collision_sound_3)
+      BGM.channel.fadeout(1)
+      self.obstacle_group.empty()
+      time.sleep(3)
+      self.start_time = int(pygame.time.get_ticks() / 1000)
+      return True
+    else: return False
 
   def update(self):
     pygame.display.update()
@@ -85,6 +107,14 @@ class Main:
       self.obstacle_group.draw(self.screen)
       self.obstacle_group.update()
 
+      # collision
+      if self.collision_sprite():
+        print('Collision')
+
+      # BGM
+      if not BGM.is_BGM_channel_busy():
+        print('lets play a music')
+        BGM.play_random_BGM(self.in_game_BGM_1, self.in_game_BGM_2)
 
       # update 
       self.update()

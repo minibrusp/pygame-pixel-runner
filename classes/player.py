@@ -3,6 +3,7 @@ import sys
 sys.path.append('..')
 
 from config.settings import *
+from classes.sfx import SFX
 
 class Player(pygame.sprite.Sprite):
   def __init__(self):
@@ -20,10 +21,15 @@ class Player(pygame.sprite.Sprite):
 
     self.gravity = 0
 
+    self.jump_sound = SFX('player_jump')
+
+
   def player_input(self):
     keys = pygame.key.get_pressed()
     if keys[pygame.K_SPACE] and self.rect.bottom >= GROUND_SURFACE_POS_Y:
       self.gravity = -20
+      self.jump_sound.play_SFX()
+
 
   def appy_gravity(self):
     self.gravity += 1
