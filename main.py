@@ -19,6 +19,8 @@ class Main:
     pygame.display.set_caption('Pixel Runner')
     self.clock = pygame.time.Clock()
     self.font_face_n_size = pygame.font.Font('font/Pixeltype.ttf', 50)
+    self.credits_font_face = pygame.font.Font('font/Pixeltype.ttf', 25)
+    self.game_active = False
     
 
     # statics
@@ -32,6 +34,9 @@ class Main:
     # Player
     self.player = pygame.sprite.GroupSingle()
     self.player.add(Player())
+
+    self.player_menu = pygame.sprite.GroupSingle()
+    self.player_menu.add(Player('menu'))
 
     # Obstacles 
     self.obstacle_group = pygame.sprite.Group()
@@ -52,26 +57,31 @@ class Main:
     self.collision_sound_2 = SFX('collision_2')
     self.collision_sound_3 = SFX('collision_3')
 
-    # BGM 
-    self.in_game_BGM_1 = BGM('in_game_1')
-    self.in_game_BGM_2 = BGM('in_game_2')
+    # BGM
+
+  def display_text(self, message, color, x_pos, y_pos):
+    text = self.font_face_n_size.render(message, False, color)
+    text_rect = text.get_rect(center = (x_pos, y_pos))
+    self.screen.blit(text, text_rect)
+    
+  def display_credits(self):
+    credits = self.credits_font_face.render('github.com/minibrusp', False, SCORE_COLOR)
+    credits_rect = credits.get_rect(center = (100, GAME_HEIGHT - 50))
+    self.screen.blit(credits, credits_rect)
 
   def display_score(self):
     current_time = int(pygame.time.get_ticks() / 1000) - self.start_time
-    score_surf = self.font_face_n_size.render(f' Score: {current_time}', False, TEXT_COLOR)
-    score_rect = score_surf.get_rect(center = (TEXT_CENTER_X, SCORE_POS_Y))
-    self.screen.blit(score_surf, score_rect)
+    self.display_text(f' Score: {current_time}', SCORE_COLOR, TEXT_CENTER_X, SCORE_POS_Y)
     return current_time
   
   def collision_sprite(self):
     if pygame.sprite.spritecollide(self.player.sprite, self.obstacle_group, False):
-      SFX.random_play_SFX(self.collision_sound_1, self.collision_sound_2, self.collision_sound_3)
-      BGM.channel.fadeout(1)
+      BGM.channel.stop()
       self.obstacle_group.empty()
+      SFX.random_play_SFX(self.collision_sound_1, self.collision_sound_2, self.collision_sound_3)
       time.sleep(3)
-      self.start_time = int(pygame.time.get_ticks() / 1000)
-      return True
-    else: return False
+      return False
+    else: return True
 
   def update(self):
     pygame.display.update()
@@ -86,35 +96,64 @@ class Main:
           pygame.quit()
           exit()
 
-        if event.type == self.obstacle_timer:
-          self.obstacle_group.add(Obstacle(choice(['fly', 'snail', 'snail'])))
+        if self.game_active:
 
+          if event.type == self.obstacle_timer:
+            self.obstacle_group.add(Obstacle(choice(['fly', 'snail', 'snail'])))
+
+        else: 
+          if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            BGM.channel.stop()
+            self.game_active = True
+            self.start_time = int(pygame.time.get_ticks() / 1000)
 
       # game loop
-      self.screen.fill((94, 129, 162))
-      self.screen.blit(self.sky_surface, (0, 0))
-      self.screen.blit(self.ground_surface, (0, GROUND_SURFACE_POS_Y))
+      if self.game_active:
+        self.screen.blit(self.sky_surface, (0, 0))
+        self.screen.blit(self.ground_surface, (0, GROUND_SURFACE_POS_Y))
 
-      # score
-      self.score = self.display_score()
+        # score
+        self.score = self.display_score()
+
+        # Player 
+        self.player.draw(self.screen)
+        self.player.update()
+
+        # Obstacles      
+        self.obstacle_group.draw(self.screen)
+        self.obstacle_group.update()
+
+        # collision
+        self.game_active = self.collision_sprite()
+
+        # BGM
+        if not BGM.is_BGM_channel_busy() and self.game_active:
+          BGM.play_random_BGM('ingame')
+
+        # text 
+        self.display_credits()
+        
 
 
-      # Player 
-      self.player.draw(self.screen)
-      self.player.update()
+      else:
+        self.screen.fill((94, 129, 162))
 
-      # Obstacles      
-      self.obstacle_group.draw(self.screen)
-      self.obstacle_group.update()
+        # Player
+        self.player_menu.draw(self.screen)
+        self.player_menu.update()
 
-      # collision
-      if self.collision_sprite():
-        print('Collision')
+        # text
+        self.display_text('Pixel Runner', TEXT_COLOR, TEXT_CENTER_X, TITLE_POS_Y)
 
-      # BGM
-      if not BGM.is_BGM_channel_busy():
-        print('lets play a music')
-        BGM.play_random_BGM(self.in_game_BGM_1, self.in_game_BGM_2)
+        if self.score == 0: self.display_text('Press space to run', TEXT_COLOR, TEXT_CENTER_X, GAME_MSG_POS_Y)
+        else: self.display_text(f'Your score: {self.score}', TEXT_COLOR, TEXT_CENTER_X, GAME_MSG_POS_Y)
+
+        self.display_credits()
+
+        if not BGM.is_BGM_channel_busy():
+          BGM.play_random_BGM('menu')
+
+
 
       # update 
       self.update()

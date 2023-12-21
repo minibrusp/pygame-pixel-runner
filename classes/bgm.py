@@ -6,80 +6,38 @@ sys.path.append('..')
 from config.settings import *
 
 class BGM():
-  in_game_bgm_1 = 'audio/ingame1.wav'
-  in_game_bgm_2 = 'audio/ingame2.wav'
 
   mixer = pygame.mixer
 
   mixer.init()
   mixer.set_num_channels(8)
+
   channel = mixer.Channel(2)
   channel.set_volume(0.7)
 
-  def __init__(self, name):
-    self.name = name
-    # self.mixer = pygame.mixer
+  in_game_BGM_1 = pygame.mixer.Sound('audio/ingame1.wav')
+  in_game_BGM_2 = pygame.mixer.Sound('audio/ingame2.wav')
+  in_menu_BGM_1 = pygame.mixer.Sound('audio/menu1.wav')
+  in_menu_BGM_2 = pygame.mixer.Sound('audio/menu2.wav')
 
-    match self.name:
-      case 'in_game_1':
-        self.sound = BGM.mixer.Sound(BGM.in_game_bgm_1)
-      case 'in_game_2':
-        self.sound = BGM.mixer.Sound(BGM.in_game_bgm_2)
+  def stop_BGM():
+    BGM.channel.stop()
+  
 
-    
-    # self.channel = self.mixer.Channel(2)
-    
-    # self.mixer.init()
-    # self.mixer.set_num_channels(8)
-    # self.mixer.music.set_volume(0.7)
+  def play_BGM(chosen_BGM):
 
-
-  def play_BGM(self):
-    BGM.channel.play(Sound = self.sound, loops = -1)
+    BGM.channel.play(Sound = chosen_BGM, loops = -1)
 
   def is_BGM_channel_busy():
+
     return BGM.channel.get_busy()
+        
   
-  def play_random_BGM(*args):
-    chosen_BGM = choice(args)
-    chosen_BGM.play_BGM()
-
-
-
-
-
-# from random import choice
-# import sys 
-
-# sys.path.append('..')
-
-# from config.settings import *
-
-# class BGM():
-#   in_game_bgm_1 = 'audio/ingame1.wav'
-#   in_game_bgm_2 = 'audio/ingame2.wav'
-
-#   def __init__(self, name):
-#     self.name = name
-#     self.mixer = pygame.mixer
-
-#     match self.name:
-#       case 'in_game_1':
-#         self.sound = self.mixer.Sound(BGM.in_game_bgm_1)
-#       case 'in_game_2':
-#         self.sound = self.mixer.Sound(BGM.in_game_bgm_2)
-
-    
-#     self.channel = self.mixer.Channel(2)
-    
-#     self.mixer.init()
-#     self.mixer.set_num_channels(8)
-#     self.mixer.music.set_volume(0.7)
-
-
-#   def play_BGM(self):
-#     self.channel.play(Sound = self.sound, loops = -1)
-
-#   def is_BGM_channel_busy(self):
-#     return self.channel.get_busy()
-
+  def play_random_BGM(type = 'ingame'):
+    match type:
+      case 'ingame':
+        chosen_BGM = choice([BGM.in_game_BGM_1, BGM.in_game_BGM_2])
+        BGM.play_BGM(chosen_BGM)
+      case 'menu':
+        chosen_BGM = choice([BGM.in_menu_BGM_1, BGM.in_menu_BGM_2])
+        BGM.play_BGM(chosen_BGM)

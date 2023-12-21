@@ -24,7 +24,7 @@ class SFX():
       case 'collision_3':
         self.sound = pygame.mixer.Sound(SFX.collision_3)
 
-    self.sound.set_volume(0.4)
+    # self.sound.set_volume(0.7)
 
   def play_SFX(self):
     self.sound.play()
